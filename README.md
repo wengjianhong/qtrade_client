@@ -1,6 +1,6 @@
 # qtrade_client
 
-企业级量化交易客户端参考实现：组合已安装的 `qtrade_engine`（`IEngine`）与 `qtrade_service`（`Grpc*Bridge`），产出生产进程 `qtrade_engine`。
+企业级量化交易客户端参考实现：组合已安装的 `qtrade_engine`（`IEngine`）与 `qtrade_service`（`Grpc*Bridge`），产出生产进程 `qtrade_engine`。本仓实现行情/交易适配器（`src/adapters/`：mock、emt），在注入引擎前创建并 Connect。
 
 本仓**不**实现引擎核心或支撑微服务；策略 `.so` 由 `qtrade_strategy` 提供。
 

@@ -1,10 +1,12 @@
 /// @file      main.cpp
 /// @brief     企业级交易引擎客户端入口（qtrade_client）
 /// @details   依赖已安装的 qtrade_engine（IEngine）与 qtrade_service（Grpc*Bridge）；
-///            持有方先 Init 桥接至可用，再注入引擎并 Init / 加载策略 / Start。
+///            持有方负责就绪桥接与行情/交易适配器，再注入引擎。
 /// @author    wengjianhong
 /// @date      2026-08-06
 /// @copyright CC BY-NC-SA 4.0
+#include "adapters/emt/emt_adapter_factory.hpp"
+#include "adapters/mock/mock_adapter_factory.hpp"
 #include "qtrade/bridge/grpc_account_bridge.hpp"
 #include "qtrade/bridge/grpc_account_risk_bridge.hpp"
 #include "qtrade/bridge/grpc_config_bridge.hpp"
@@ -19,6 +21,89 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
+
+namespace {
+
+struct AdapterBundle {
+  std::unique_ptr<qtrade_sdk::quote::QuoteApi> quote_api;
+  std::unique_ptr<qtrade_sdk::trader::TraderApi> trader_api;
+};
+
+[[nodiscard]] bool ConnectAndTake(AdapterBundle* out,
+                                  std::unique_ptr<qtrade_sdk::quote::QuoteApi> quote_api,
+                                  std::unique_ptr<qtrade_sdk::trader::TraderApi> trader_api,
+                                  qtrade_sdk::quote::ConnectRequest quote_request,
+                                  qtrade_sdk::trader::ConnectRequest trader_request) {
+  if (quote_api->Connect(quote_request) != qtrade::ErrorCode::kSuccess) {
+    return false;
+  }
+  if (trader_api->Connect(trader_request) != qtrade::ErrorCode::kSuccess) {
+    quote_api->Disconnect();
+    return false;
+  }
+  out->quote_api = std::move(quote_api);
+  out->trader_api = std::move(trader_api);
+  return true;
+}
+
+[[nodiscard]] bool BuildAdapters(const qtrade::common::config::QtradeEngineBootstrapConfig& bootstrap,
+                                 qtrade::config::IConfigBridge* config_bridge,
+                                 qtrade::account::IAccountBridge* account_bridge,
+                                 AdapterBundle* out) {
+  if (config_bridge == nullptr) {
+    // 无远端配置时默认 mock（本地 / 开发）
+    auto bundle = qtrade::adapter::mock::CreateMockAdapters("mock://local", bootstrap.config.identity.account_id);
+    return ConnectAndTake(out,
+                          std::move(bundle.quote_api),
+                          std::move(bundle.trader_api),
+                          std::move(bundle.quote_request),
+                          std::move(bundle.trader_request));
+  }
+
+  const auto cfg_result = config_bridge->GetEngineConfig();
+  if (cfg_result.error_code != qtrade::ErrorCode::kSuccess || !cfg_result.data.has_value()) {
+    return false;
+  }
+  const auto& runtime = *cfg_result.data;
+  if (runtime.execution_adapter.empty() || runtime.quote_connection_string.empty()) {
+    return false;
+  }
+
+  if (runtime.execution_adapter == "mock") {
+    auto bundle =
+      qtrade::adapter::mock::CreateMockAdapters(runtime.quote_connection_string, bootstrap.config.identity.account_id);
+    return ConnectAndTake(out,
+                          std::move(bundle.quote_api),
+                          std::move(bundle.trader_api),
+                          std::move(bundle.quote_request),
+                          std::move(bundle.trader_request));
+  }
+  if (runtime.execution_adapter == "emt") {
+    if (account_bridge == nullptr) {
+      return false;
+    }
+    qtrade::ErrorCode create_error = qtrade::ErrorCode::kInternalError;
+    auto bundle = qtrade::adapter::emt::CreateEmtAdapters(*account_bridge,
+                                                          bootstrap.config.identity.tenant_id,
+                                                          bootstrap.config.identity.engine_id,
+                                                          bootstrap.config.identity.account_id,
+                                                          runtime.quote_connection_string,
+                                                          &create_error);
+    if (!bundle.has_value()) {
+      return false;
+    }
+    return ConnectAndTake(out,
+                          std::move(bundle->quote_api),
+                          std::move(bundle->trader_api),
+                          std::move(bundle->quote_request),
+                          std::move(bundle->trader_request));
+  }
+  return false;
+}
+
+}  // namespace
 
 int main(int argc, char** argv) {
   qtrade::common::system::BlockInterruptSignals();
@@ -45,7 +130,6 @@ int main(int argc, char** argv) {
 
   auto engine = qtrade::engine::CreateEngine();
 
-  // 桥接由本进程持有：先 Init 至可用，再注入；引擎停稳后 Shutdown（析构也会 Shutdown）
   std::unique_ptr<qtrade::bridge::GrpcConfigBridge> config_bridge;
   std::unique_ptr<qtrade::bridge::GrpcAccountBridge> account_bridge;
   std::unique_ptr<qtrade::bridge::GrpcAccountRiskBridge> account_risk_bridge;
@@ -77,6 +161,14 @@ int main(int argc, char** argv) {
     }
     engine->SetAccountRiskBridge(account_risk_bridge.get());
   }
+
+  AdapterBundle adapters;
+  if (!BuildAdapters(*bootstrap_config, config_bridge.get(), account_bridge.get(), &adapters)) {
+    qtrade::common::system::NotifyError(0, "Failed to build/connect quote/trader adapters");
+    return EXIT_FAILURE;
+  }
+  engine->SetQuoteApi(std::move(adapters.quote_api));
+  engine->SetTraderApi(std::move(adapters.trader_api));
 
   if (engine->Init(bootstrap_config.value()) != qtrade::ErrorCode::kSuccess) {
     qtrade::common::system::NotifyError(0, "Failed to initialize engine");
