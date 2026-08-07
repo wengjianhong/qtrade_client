@@ -1,0 +1,2 @@
+/usr/local/qtrade/bin/qtrade_engine
+/usr/local/qtrade/config/qtrade_engine.json

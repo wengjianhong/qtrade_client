@@ -1,0 +1,7 @@
+/home/wengjianhong/GitSpace/qtrade_client/build/CMakeFiles/qtrade_engine.dir
+/home/wengjianhong/GitSpace/qtrade_client/build/CMakeFiles/edit_cache.dir
+/home/wengjianhong/GitSpace/qtrade_client/build/CMakeFiles/rebuild_cache.dir
+/home/wengjianhong/GitSpace/qtrade_client/build/CMakeFiles/list_install_components.dir
+/home/wengjianhong/GitSpace/qtrade_client/build/CMakeFiles/install.dir
+/home/wengjianhong/GitSpace/qtrade_client/build/CMakeFiles/install/local.dir
+/home/wengjianhong/GitSpace/qtrade_client/build/CMakeFiles/install/strip.dir
