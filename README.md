@@ -1,6 +1,6 @@
 # qtrade_client
 
-企业级量化交易客户端参考实现：组合已安装的 `qtrade_engine`（`IEngine`）与 `qtrade_service`（`Grpc*Bridge`），产出生产进程 `qtrade_engine`。本仓实现行情/交易适配器（`src/adapters/`：mock、emt），在注入引擎前创建并 Connect。
+企业级量化交易客户端参考实现：组合已安装的 `qtrade_engine`（核心库 / `IEngine`）与 `qtrade_service`（`Grpc*Bridge`），产出生产进程 **`qtrade_client`**。本仓实现行情/交易适配器（`src/adapters/`：mock、emt），在注入引擎前创建并 Connect。
 
 本仓**不**实现引擎核心或支撑微服务；策略 `.so` 由 `qtrade_strategy` 提供。
 
@@ -23,7 +23,7 @@ sudo cmake --install build
 
 ```bash
 export PATH=/usr/local/qtrade/bin:$PATH
-qtrade_engine --config /usr/local/qtrade/config/qtrade_engine.json
+qtrade_client --config /usr/local/qtrade/config/qtrade_engine.json
 ```
 
 引导配置中 `config.strategy.plugin_dir` 应指向策略安装目录，例如 `/usr/local/qtrade/lib/strategies`。

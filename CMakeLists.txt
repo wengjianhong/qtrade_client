@@ -26,9 +26,9 @@ find_package(cpputils 0.1.0 REQUIRED CONFIG)
 find_package(qtrade_engine REQUIRED CONFIG)
 find_package(qtrade_service REQUIRED CONFIG)
 
-include(${CMAKE_SOURCE_DIR}/cmake/qtrade_engine.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/qtrade_client.cmake)
 
-install(TARGETS qtrade_engine
+install(TARGETS qtrade_client
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

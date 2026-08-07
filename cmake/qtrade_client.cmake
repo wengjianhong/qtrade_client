@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Production trading engine client binary + vendor adapters
+# Production trading client binary + vendor adapters
 # ---------------------------------------------------------------------------
 
 file(GLOB_RECURSE QTRADE_CLIENT_ADAPTER_SRC CONFIGURE_DEPENDS
@@ -14,7 +14,7 @@ target_link_libraries(qtrade_client_adapters PUBLIC
   qtrade_service::qtrade_service_bridges
 )
 
-add_executable(qtrade_engine ${CMAKE_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(qtrade_engine PRIVATE
+add_executable(qtrade_client ${CMAKE_SOURCE_DIR}/src/main.cpp)
+target_link_libraries(qtrade_client PRIVATE
   qtrade_client_adapters
 )

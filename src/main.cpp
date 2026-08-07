@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
 
   const auto options_result = qtrade::common::process_boot::ParseProgramOptions(argc, argv);
   if (options_result.error_code != qtrade::ErrorCode::kSuccess || !options_result.data.has_value()) {
-    std::cerr << "[qtrade_engine] Failed to parse program options:" << options_result.error_message << std::endl;
+    std::cerr << "[qtrade_client] Failed to parse program options:" << options_result.error_message << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
     qtrade::common::system::NotifyError(0, "Failed to start engine");
     return EXIT_FAILURE;
   }
-  (void)qtrade::common::system::NotifyReady("qtrade_engine ready");
+  (void)qtrade::common::system::NotifyReady("qtrade_client ready");
 
   qtrade::engine::boot::RunUntilShutdown(*engine);
 
