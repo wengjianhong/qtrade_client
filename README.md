@@ -1,13 +1,13 @@
 # qtrade_client
 
-企业级量化交易客户端参考实现：组合已安装的 `qtrade`（`IEngine`）与 `qtrade_service`（`Grpc*Bridge`），产出生产进程 `qtrade_engine`。
+企业级量化交易客户端参考实现：组合已安装的 `qtrade_engine`（`IEngine`）与 `qtrade_service`（`Grpc*Bridge`），产出生产进程 `qtrade_engine`。
 
 本仓**不**实现引擎核心或支撑微服务；策略 `.so` 由 `qtrade_strategy` 提供。
 
 ## 构建顺序
 
 ```bash
-# 1. qtrade（库）
+# 1. qtrade_engine（库）
 # 2. qtrade_service（服务 + bridges 库）
 # 3. qtrade_strategy（可选，策略 so）
 # 4. 本仓

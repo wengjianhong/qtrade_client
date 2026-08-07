@@ -260,9 +260,6 @@ cpputils_DIR:PATH=/usr/local/cpputils/lib/cmake/cpputils
 //The directory containing a CMake configuration file for nlohmann_json.
 nlohmann_json_DIR:PATH=/usr/share/cmake/nlohmann_json
 
-//The directory containing a CMake configuration file for qtrade.
-qtrade_DIR:PATH=/usr/local/qtrade/lib/cmake/qtrade
-
 //Value Computed by CMake
 qtrade_client_BINARY_DIR:STATIC=/home/wengjianhong/GitSpace/qtrade_client/build
 
@@ -271,6 +268,9 @@ qtrade_client_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
 qtrade_client_SOURCE_DIR:STATIC=/home/wengjianhong/GitSpace/qtrade_client
+
+//The directory containing a CMake configuration file for qtrade_engine.
+qtrade_engine_DIR:PATH=/usr/local/qtrade/lib/cmake/qtrade_engine
 
 //The directory containing a CMake configuration file for qtrade_service.
 qtrade_service_DIR:PATH=/usr/local/qtrade/lib/cmake/qtrade_service

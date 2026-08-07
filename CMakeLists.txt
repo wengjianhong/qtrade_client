@@ -23,7 +23,7 @@ find_package(Threads REQUIRED)
 find_package(spdlog 1.16.0 REQUIRED)
 find_package(nlohmann_json 3.11.0 REQUIRED)
 find_package(cpputils 0.1.0 REQUIRED CONFIG)
-find_package(qtrade REQUIRED CONFIG)
+find_package(qtrade_engine REQUIRED CONFIG)
 find_package(qtrade_service REQUIRED CONFIG)
 
 include(${CMAKE_SOURCE_DIR}/cmake/qtrade_engine.cmake)

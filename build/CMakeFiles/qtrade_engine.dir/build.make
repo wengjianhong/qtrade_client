@@ -92,11 +92,11 @@ qtrade_engine_EXTERNAL_OBJECTS =
 
 bin/qtrade_engine: CMakeFiles/qtrade_engine.dir/src/main.cpp.o
 bin/qtrade_engine: CMakeFiles/qtrade_engine.dir/build.make
-bin/qtrade_engine: /usr/local/qtrade/lib/libqtrade_core.a
+bin/qtrade_engine: /usr/local/qtrade/lib/libqtrade_engine.a
 bin/qtrade_engine: /usr/local/qtrade/lib/libqtrade_service_bridges.a
 bin/qtrade_engine: /usr/local/qtrade/lib/libqtrade_service_client.a
 bin/qtrade_engine: /usr/local/qtrade/lib/libqtrade_service_common.a
-bin/qtrade_engine: /usr/local/qtrade/lib/libqtrade_common.a
+bin/qtrade_engine: /usr/local/qtrade/lib/libqtrade_engine.a
 bin/qtrade_engine: /usr/local/lib/libspdlog.so.1.16.0
 bin/qtrade_engine: /usr/local/cpputils/lib/libcpputils.so
 bin/qtrade_engine: /usr/lib/x86_64-linux-gnu/libsoci_core.so
