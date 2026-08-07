@@ -1,7 +1,7 @@
 /// @file      main.cpp
 /// @brief     企业级交易引擎客户端入口（qtrade_client）
-/// @details   依赖已安装的 qtrade_engine（IEngine）与 qtrade_service（Grpc*Bridge）；
-///            持有方负责就绪桥接与行情/交易适配器，再注入引擎。
+/// @details   依赖已安装的 qtrade_engine（IEngine）与 qtrade_service（proto）；
+///            本仓持有 Grpc*Bridge / 适配器，就绪后注入引擎。
 /// @author    wengjianhong
 /// @date      2026-08-06
 /// @copyright CC BY-NC-SA 4.0
