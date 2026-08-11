@@ -86,7 +86,6 @@ struct AdapterBundle {
     }
     qtrade::ErrorCode create_error = qtrade::ErrorCode::kInternalError;
     auto bundle = qtrade::adapter::emt::CreateEmtAdapters(*account_bridge,
-                                                          bootstrap.config.identity.tenant_id,
                                                           bootstrap.config.identity.engine_id,
                                                           bootstrap.config.identity.account_id,
                                                           runtime.quote_connection_string,

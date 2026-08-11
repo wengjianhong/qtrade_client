@@ -26,19 +26,16 @@ void GrpcAccountBridge::Shutdown() {
   client_.Shutdown();
 }
 
-std::string GrpcAccountBridge::CacheKey(const std::string& tenant_id, const std::string& account_id) {
-  return tenant_id + '\0' + account_id;
+std::string GrpcAccountBridge::CacheKey(const std::string& account_id) {
+  return account_id;
 }
 
-Result<qtrade::account::CredentialMaterial> GrpcAccountBridge::GetCredential(
-  const std::string& tenant_id,
-  const std::string& account_id,
-  const std::string& engine_id) const {
+Result<qtrade::account::CredentialMaterial> GrpcAccountBridge::GetCredential(const std::string& account_id,
+                                                                             const std::string& engine_id) const {
   Result<qtrade::account::CredentialMaterial> result;
 
   if (client_.IsInitialized()) {
     qtrade::account::v1::GetCredentialRequest request;
-    request.set_tenant_id(tenant_id);
     request.set_account_id(account_id);
     request.set_engine_id(engine_id);
     qtrade::account::v1::GetCredentialResponse response;
@@ -46,7 +43,7 @@ Result<qtrade::account::CredentialMaterial> GrpcAccountBridge::GetCredential(
       auto material = ToCredentialMaterial(response.credential());
       {
         std::lock_guard lock(mutex_);
-        cache_[CacheKey(tenant_id, account_id)] = material;
+        cache_[CacheKey(account_id)] = material;
       }
       result.data = std::move(material);
       return result;
@@ -56,7 +53,7 @@ Result<qtrade::account::CredentialMaterial> GrpcAccountBridge::GetCredential(
   }
 
   std::lock_guard lock(mutex_);
-  const auto it = cache_.find(CacheKey(tenant_id, account_id));
+  const auto it = cache_.find(CacheKey(account_id));
   if (it == cache_.end()) {
     if (result.error_code == ErrorCode::kSuccess) {
       result.error_code = ErrorCode::kNotInitialized;
@@ -68,12 +65,6 @@ Result<qtrade::account::CredentialMaterial> GrpcAccountBridge::GetCredential(
   result.error_message.clear();
   result.data = it->second;
   return result;
-}
-
-ErrorCode GrpcAccountBridge::ApplyCredential(const qtrade::account::CredentialMaterial& credential) {
-  std::lock_guard lock(mutex_);
-  cache_[CacheKey(credential.tenant_id, credential.account_id)] = credential;
-  return ErrorCode::kSuccess;
 }
 
 }  // namespace qtrade::bridge

@@ -61,6 +61,10 @@ class AccountRiskClient {
   ErrorCode ReleaseOrder(const qtrade::account_risk::v1::ReleaseOrderRequest& request,
                          qtrade::account_risk::v1::ReleaseOrderResponse& response);
 
+  /// @brief 查询账户硬风控策略
+  ErrorCode GetAccountRiskPolicy(const qtrade::account_risk::v1::GetAccountRiskPolicyRequest& request,
+                                 qtrade::account_risk::v1::GetAccountRiskPolicyResponse& response);
+
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;

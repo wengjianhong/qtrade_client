@@ -91,4 +91,18 @@ ErrorCode AccountRiskClient::ReleaseOrder(const qtrade::account_risk::v1::Releas
   return status.ok() ? ErrorCode::kSuccess : ErrorCode::kTimeout;
 }
 
+ErrorCode AccountRiskClient::GetAccountRiskPolicy(const qtrade::account_risk::v1::GetAccountRiskPolicyRequest& request,
+                                                  qtrade::account_risk::v1::GetAccountRiskPolicyResponse& response) {
+  if (!IsInitialized()) {
+    return ErrorCode::kNotInitialized;
+  }
+  grpc::ClientContext context;
+  context.set_deadline(DeadlineFrom(impl_->options.service_config));
+  const grpc::Status status = impl_->stub->GetAccountRiskPolicy(&context, request, &response);
+  if (status.ok()) {
+    return ErrorCode::kSuccess;
+  }
+  return status.error_code() == grpc::StatusCode::NOT_FOUND ? ErrorCode::kNotFound : ErrorCode::kTimeout;
+}
+
 }  // namespace qtrade::client

@@ -33,29 +33,24 @@ class GrpcAccountRiskBridge final : public qtrade::account_risk::IAccountRiskBri
   void Shutdown();
 
   Result<qtrade::account_risk::AccountRiskPolicy> GetAccountRiskPolicy(
-    const std::string& tenant_id,
     const std::string& account_id) const override;
-  ErrorCode ApplyAccountRiskPolicy(const qtrade::account_risk::AccountRiskPolicy& policy) override;
 
-  Result<qtrade::account_risk::ReserveOrderResult> ReserveOrder(const std::string& tenant_id,
-                                                                const std::string& account_id,
+  Result<qtrade::account_risk::ReserveOrderResult> ReserveOrder(const std::string& account_id,
                                                                 const qtrade::account_risk::OrderIntent& intent,
                                                                 std::uint64_t risk_config_version,
                                                                 std::int64_t reservation_ttl_ms) override;
 
-  Result<qtrade::account_risk::ReleaseOrderResult> ReleaseOrder(const std::string& tenant_id,
-                                                                const std::string& account_id,
+  Result<qtrade::account_risk::ReleaseOrderResult> ReleaseOrder(const std::string& account_id,
                                                                 const std::string& order_id,
                                                                 qtrade::account_risk::ReleaseReason reason,
                                                                 double settled_notional,
                                                                 double settled_margin) override;
 
-  Result<qtrade::account_risk::Reservation> GetReservation(const std::string& tenant_id,
-                                                           const std::string& account_id,
+  Result<qtrade::account_risk::Reservation> GetReservation(const std::string& account_id,
                                                            const std::string& order_id) const override;
 
  private:
-  static std::string CacheKey(const std::string& tenant_id, const std::string& account_id);
+  static std::string CacheKey(const std::string& account_id);
 
   qtrade::common::config::ServiceConfig service_config_;
   mutable qtrade::client::AccountRiskClient client_;

@@ -20,7 +20,6 @@ void SetOutError(ErrorCode* out_error, ErrorCode code) {
 }  // namespace
 
 std::optional<EmtAdapterBundle> CreateEmtAdapters(qtrade::account::IAccountBridge& account_bridge,
-                                                  const std::string& tenant_id,
                                                   const std::string& engine_id,
                                                   const std::string& account_id,
                                                   const std::string& quote_connection_string,
@@ -30,7 +29,7 @@ std::optional<EmtAdapterBundle> CreateEmtAdapters(qtrade::account::IAccountBridg
     return std::nullopt;
   }
 
-  const auto credential_result = account_bridge.GetCredential(tenant_id, account_id, engine_id);
+  const auto credential_result = account_bridge.GetCredential(account_id, engine_id);
   if (credential_result.error_code != ErrorCode::kSuccess || !credential_result.data.has_value()) {
     SetOutError(out_error, credential_result.error_code);
     return std::nullopt;

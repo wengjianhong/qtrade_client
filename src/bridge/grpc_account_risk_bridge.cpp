@@ -26,33 +26,53 @@ void GrpcAccountRiskBridge::Shutdown() {
   client_.Shutdown();
 }
 
-std::string GrpcAccountRiskBridge::CacheKey(const std::string& tenant_id, const std::string& account_id) {
-  return tenant_id + '\0' + account_id;
+std::string GrpcAccountRiskBridge::CacheKey(const std::string& account_id) {
+  return account_id;
 }
 
 Result<qtrade::account_risk::AccountRiskPolicy> GrpcAccountRiskBridge::GetAccountRiskPolicy(
-  const std::string& tenant_id,
   const std::string& account_id) const {
   Result<qtrade::account_risk::AccountRiskPolicy> result;
+
+  if (client_.IsInitialized()) {
+    qtrade::account_risk::v1::GetAccountRiskPolicyRequest request;
+    request.set_account_id(account_id);
+    qtrade::account_risk::v1::GetAccountRiskPolicyResponse response;
+    const auto rc = client_.GetAccountRiskPolicy(request, response);
+    if (rc == ErrorCode::kSuccess) {
+      auto policy = ToAccountRiskPolicy(response.policy());
+      {
+        std::lock_guard lock(mutex_);
+        policy_cache_[CacheKey(account_id)] = policy;
+      }
+      result.data = std::move(policy);
+      return result;
+    }
+    if (rc == ErrorCode::kNotFound) {
+      result.error_code = ErrorCode::kNotFound;
+      result.error_message = "account risk policy not found";
+      return result;
+    }
+    result.error_code = ErrorCode::kTimeout;
+    result.error_message = "GetAccountRiskPolicy RPC failed";
+  }
+
   std::lock_guard lock(mutex_);
-  const auto it = policy_cache_.find(CacheKey(tenant_id, account_id));
+  const auto it = policy_cache_.find(CacheKey(account_id));
   if (it == policy_cache_.end()) {
-    result.error_code = ErrorCode::kNotFound;
-    result.error_message = "account risk policy not cached";
+    if (result.error_code == ErrorCode::kSuccess) {
+      result.error_code = ErrorCode::kNotInitialized;
+      result.error_message = "account risk policy not available";
+    }
     return result;
   }
+  result.error_code = ErrorCode::kSuccess;
+  result.error_message.clear();
   result.data = it->second;
   return result;
 }
 
-ErrorCode GrpcAccountRiskBridge::ApplyAccountRiskPolicy(const qtrade::account_risk::AccountRiskPolicy& policy) {
-  std::lock_guard lock(mutex_);
-  policy_cache_[CacheKey(policy.tenant_id, policy.account_id)] = policy;
-  return ErrorCode::kSuccess;
-}
-
 Result<qtrade::account_risk::ReserveOrderResult> GrpcAccountRiskBridge::ReserveOrder(
-  const std::string& tenant_id,
   const std::string& account_id,
   const qtrade::account_risk::OrderIntent& intent,
   std::uint64_t risk_config_version,
@@ -64,7 +84,6 @@ Result<qtrade::account_risk::ReserveOrderResult> GrpcAccountRiskBridge::ReserveO
   }
 
   qtrade::account_risk::v1::ReserveOrderRequest request;
-  request.set_tenant_id(tenant_id);
   request.set_account_id(account_id);
   request.set_risk_config_version(risk_config_version);
   request.set_reservation_ttl_ms(reservation_ttl_ms);
@@ -97,7 +116,6 @@ Result<qtrade::account_risk::ReserveOrderResult> GrpcAccountRiskBridge::ReserveO
 }
 
 Result<qtrade::account_risk::ReleaseOrderResult> GrpcAccountRiskBridge::ReleaseOrder(
-  const std::string& tenant_id,
   const std::string& account_id,
   const std::string& order_id,
   qtrade::account_risk::ReleaseReason reason,
@@ -110,7 +128,6 @@ Result<qtrade::account_risk::ReleaseOrderResult> GrpcAccountRiskBridge::ReleaseO
   }
 
   qtrade::account_risk::v1::ReleaseOrderRequest request;
-  request.set_tenant_id(tenant_id);
   request.set_account_id(account_id);
   request.set_order_id(order_id);
   request.set_reason(ToProtoReleaseReason(reason));
@@ -132,7 +149,6 @@ Result<qtrade::account_risk::ReleaseOrderResult> GrpcAccountRiskBridge::ReleaseO
 }
 
 Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::GetReservation(
-  const std::string& tenant_id,
   const std::string& account_id,
   const std::string& order_id) const {
   Result<qtrade::account_risk::Reservation> result;
@@ -142,7 +158,6 @@ Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::GetReservation(
   }
 
   qtrade::account_risk::v1::GetReservationRequest request;
-  request.set_tenant_id(tenant_id);
   request.set_account_id(account_id);
   request.set_order_id(order_id);
   qtrade::account_risk::v1::GetReservationResponse response;

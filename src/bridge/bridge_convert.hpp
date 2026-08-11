@@ -42,11 +42,25 @@ namespace qtrade::bridge {
 [[nodiscard]] inline qtrade::account::CredentialMaterial ToCredentialMaterial(
   const qtrade::account::v1::CredentialMaterial& proto) {
   qtrade::account::CredentialMaterial out;
-  out.tenant_id = proto.tenant_id();
   out.account_id = proto.account_id();
   out.broker_id = proto.broker_id();
   out.connection_string = proto.connection_string();
   out.password = proto.password();
+  return out;
+}
+
+[[nodiscard]] inline qtrade::account_risk::AccountRiskPolicy ToAccountRiskPolicy(
+  const qtrade::account_risk::v1::AccountRiskPolicy& proto) {
+  qtrade::account_risk::AccountRiskPolicy out;
+  out.account_id = proto.account_id();
+  out.version = proto.version();
+  out.valid_until_unix_ms = proto.valid_until_unix_ms();
+  out.max_notional = proto.max_notional();
+  out.max_margin = proto.max_margin();
+  out.max_gross_exposure = proto.max_gross_exposure();
+  out.max_open_orders = proto.max_open_orders();
+  out.safety_buffer = proto.safety_buffer();
+  out.enabled = proto.enabled();
   return out;
 }
 

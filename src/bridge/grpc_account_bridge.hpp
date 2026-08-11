@@ -32,13 +32,11 @@ class GrpcAccountBridge final : public qtrade::account::IAccountBridge {
   /// @brief 关闭 client；可重复调用
   void Shutdown();
 
-  Result<qtrade::account::CredentialMaterial> GetCredential(const std::string& tenant_id,
-                                                            const std::string& account_id,
+  Result<qtrade::account::CredentialMaterial> GetCredential(const std::string& account_id,
                                                             const std::string& engine_id) const override;
-  ErrorCode ApplyCredential(const qtrade::account::CredentialMaterial& credential) override;
 
  private:
-  static std::string CacheKey(const std::string& tenant_id, const std::string& account_id);
+  static std::string CacheKey(const std::string& account_id);
 
   qtrade::common::config::ServiceConfig service_config_;
   mutable qtrade::client::AccountClient client_;

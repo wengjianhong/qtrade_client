@@ -32,22 +32,16 @@ ErrorCode GrpcConfigBridge::Init() {
     spdlog::error("[GrpcConfigBridge] GetEngineConfig failed");
     return rc;
   }
-  if (const auto rc = ApplyEngineConfig(ToEngineConfig(get_response.engine())); rc != ErrorCode::kSuccess) {
-    return rc;
+
+  const auto config = ToEngineConfig(get_response.engine());
+  if (config.version == 0) {
+    spdlog::error("[GrpcConfigBridge] invalid engine config version=0");
+    return ErrorCode::kInvalidArgument;
   }
 
-  qtrade::config::v1::SubscribeEngineConfigRequest subscribe_request;
-  subscribe_request.set_engine_id(engine_id_);
-  {
-    std::lock_guard lock(mutex_);
-    subscribe_request.set_since_version(cache_.version);
-  }
-  const auto on_subscribe = [this](const qtrade::config::v1::SubscribeEngineConfigResponse& response) {
-    (void)ApplyEngineConfig(ToEngineConfig(response.engine()));
-  };
-  if (const auto rc = client_.SubscribeEngineConfig(subscribe_request, on_subscribe); rc != ErrorCode::kSuccess) {
-    spdlog::warn("[GrpcConfigBridge] SubscribeEngineConfig failed: will rely on cached Get");
-  }
+  std::lock_guard lock(mutex_);
+  cache_ = config;
+  has_config_ = true;
   return ErrorCode::kSuccess;
 }
 
@@ -65,16 +59,6 @@ Result<qtrade::config::EngineConfig> GrpcConfigBridge::GetEngineConfig() const {
   }
   result.data = cache_;
   return result;
-}
-
-ErrorCode GrpcConfigBridge::ApplyEngineConfig(const qtrade::config::EngineConfig& config) {
-  std::lock_guard lock(mutex_);
-  if (has_config_ && config.version != 0 && config.version < cache_.version) {
-    return ErrorCode::kInvalidArgument;
-  }
-  cache_ = config;
-  has_config_ = true;
-  return ErrorCode::kSuccess;
 }
 
 }  // namespace qtrade::bridge

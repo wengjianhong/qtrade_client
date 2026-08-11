@@ -33,14 +33,12 @@ struct EmtAdapterBundle {
 
 /// @brief 拉取账户凭证并构造 EMT 行情/交易适配器
 /// @param account_bridge 账户桥接
-/// @param tenant_id 租户 ID
 /// @param engine_id 引擎实例 ID
 /// @param account_id 交易账户号（须与凭证一致）
 /// @param quote_connection_string 行情连接串
 /// @param out_error 失败时写入错误码；可为 nullptr
 /// @return 成功返回装配结果；失败返回 nullopt
 [[nodiscard]] std::optional<EmtAdapterBundle> CreateEmtAdapters(qtrade::account::IAccountBridge& account_bridge,
-                                                                const std::string& tenant_id,
                                                                 const std::string& engine_id,
                                                                 const std::string& account_id,
                                                                 const std::string& quote_connection_string,
