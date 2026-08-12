@@ -8,33 +8,36 @@
 
 #include <qtrade/bridge/account_bridge.hpp>
 #include <qtrade/bridge/account_risk_bridge.hpp>
-#include <qtrade/bridge/config_bridge.hpp>
+#include <qtrade/engine/engine.hpp>
 #include <qtrade/common/proto/strategy_config_utils.hpp>
 #include <qtrade/proto/account/v1/account.pb.h>
 #include <qtrade/proto/account_risk/v1/account_risk.pb.h>
 #include <qtrade/proto/config/v1/config.pb.h>
 
+#include <vector>
+
 namespace qtrade::bridge {
 
-[[nodiscard]] inline qtrade::config::EngineConfig ToEngineConfig(const qtrade::config::v1::EngineConfig& proto) {
-  qtrade::config::EngineConfig out;
+[[nodiscard]] inline qtrade::engine::EngineConfig ToEngineConfig(const qtrade::config::v1::EngineConfig& proto) {
+  qtrade::engine::EngineConfig out;
   out.engine_id = proto.engine_id();
-  out.tenant_id = proto.tenant_id();
   out.account_id = proto.account_id();
   out.quote_source = proto.quote_source();
   out.quote_failover = proto.quote_failover();
   out.valid_until_unix_ms = proto.valid_until_unix_ms();
-  out.execution_adapter = proto.execution_adapter();
-  out.quote_connection_string = proto.quote_connection_string();
-  out.version = proto.version();
-  out.risk_budget.version = proto.risk_budget().version();
   out.risk_budget.max_notional = proto.risk_budget().max_notional();
   out.risk_budget.max_margin = proto.risk_budget().max_margin();
   out.risk_budget.max_open_orders = proto.risk_budget().max_open_orders();
   out.risk_budget.safety_buffer = proto.risk_budget().safety_buffer();
-  out.strategies.reserve(static_cast<std::size_t>(proto.strategies_size()));
+  return out;
+}
+
+[[nodiscard]] inline std::vector<qtrade::strategy::StrategyConfig> ToStrategyConfigs(
+  const qtrade::config::v1::EngineConfig& proto) {
+  std::vector<qtrade::strategy::StrategyConfig> out;
+  out.reserve(static_cast<std::size_t>(proto.strategies_size()));
   for (const auto& s : proto.strategies()) {
-    out.strategies.push_back(qtrade::common::proto::ParseStrategyConfigProto(s));
+    out.push_back(qtrade::common::proto::ParseStrategyConfigProto(s));
   }
   return out;
 }

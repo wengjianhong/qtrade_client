@@ -1,5 +1,5 @@
 /// @file      grpc_config_bridge.cpp
-/// @brief     IConfigBridge 的 gRPC 实现
+/// @brief     经 gRPC 启动时拉取一次配置
 /// @author    wengjianhong
 /// @date      2026-08-06
 /// @copyright CC BY-NC-SA 4.0
@@ -33,14 +33,23 @@ ErrorCode GrpcConfigBridge::Init() {
     return rc;
   }
 
-  const auto config = ToEngineConfig(get_response.engine());
-  if (config.version == 0) {
-    spdlog::error("[GrpcConfigBridge] invalid engine config version=0");
+  const auto& proto = get_response.engine();
+  const auto config = ToEngineConfig(proto);
+  if (config.engine_id.empty() || config.account_id.empty()) {
+    spdlog::error("[GrpcConfigBridge] invalid engine config: empty engine_id/account_id");
     return ErrorCode::kInvalidArgument;
   }
 
+  AdapterLaunchParams adapter_params;
+  adapter_params.execution_adapter = proto.execution_adapter();
+  adapter_params.quote_connection_string = proto.quote_connection_string();
+
+  auto strategies = ToStrategyConfigs(proto);
+
   std::lock_guard lock(mutex_);
   cache_ = config;
+  strategies_ = std::move(strategies);
+  adapter_params_ = std::move(adapter_params);
   has_config_ = true;
   return ErrorCode::kSuccess;
 }
@@ -49,8 +58,8 @@ void GrpcConfigBridge::Shutdown() {
   client_.Shutdown();
 }
 
-Result<qtrade::config::EngineConfig> GrpcConfigBridge::GetEngineConfig() const {
-  Result<qtrade::config::EngineConfig> result;
+Result<qtrade::engine::EngineConfig> GrpcConfigBridge::GetEngineConfig() const {
+  Result<qtrade::engine::EngineConfig> result;
   std::lock_guard lock(mutex_);
   if (!has_config_) {
     result.error_code = ErrorCode::kNotInitialized;
@@ -59,6 +68,16 @@ Result<qtrade::config::EngineConfig> GrpcConfigBridge::GetEngineConfig() const {
   }
   result.data = cache_;
   return result;
+}
+
+std::vector<qtrade::strategy::StrategyConfig> GrpcConfigBridge::GetStrategies() const {
+  std::lock_guard lock(mutex_);
+  return strategies_;
+}
+
+AdapterLaunchParams GrpcConfigBridge::GetAdapterLaunchParams() const {
+  std::lock_guard lock(mutex_);
+  return adapter_params_;
 }
 
 }  // namespace qtrade::bridge
