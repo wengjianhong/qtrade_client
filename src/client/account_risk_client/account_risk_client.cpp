@@ -73,7 +73,7 @@ ErrorCode AccountRiskClient::QueryReservation(const qtrade::account_risk::v1::Ge
   }
   grpc::ClientContext context;
   context.set_deadline(DeadlineFrom(impl_->options.service_config));
-  const grpc::Status status = impl_->stub->GetReservation(&context, request, &response);
+  const grpc::Status status = impl_->stub->QueryReservation(&context, request, &response);
   if (status.ok()) {
     return ErrorCode::kSuccess;
   }
