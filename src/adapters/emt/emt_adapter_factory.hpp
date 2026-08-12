@@ -22,13 +22,13 @@ namespace qtrade::adapter::emt {
 /// @brief EMT 适配器与连接请求打包结果
 struct EmtAdapterBundle {
   /// 行情 API
-  std::unique_ptr<qtrade_sdk::quote::QuoteApi> quote_api;
+  std::unique_ptr<qtrade::sdk::quote::QuoteApi> quote_api;
   /// 交易 API
-  std::unique_ptr<qtrade_sdk::trader::TraderApi> trader_api;
+  std::unique_ptr<qtrade::sdk::trader::TraderApi> trader_api;
   /// 行情连接请求
-  qtrade_sdk::quote::ConnectRequest quote_request;
+  qtrade::sdk::quote::ConnectRequest quote_request;
   /// 交易连接请求
-  qtrade_sdk::trader::ConnectRequest trader_request;
+  qtrade::sdk::trader::ConnectRequest trader_request;
 };
 
 /// @brief 拉取账户凭证并构造 EMT 行情/交易适配器

@@ -51,8 +51,8 @@ class AccountRiskClient {
   /// @param request 查询订单预占状态请求
   /// @param response 查询订单预占状态响应
   /// @return ErrorCode::kSuccess 表示成功；未初始化返回 kNotInitialized；RPC 失败返回 kTimeout
-  ErrorCode GetReservation(const qtrade::account_risk::v1::GetReservationRequest& request,
-                           qtrade::account_risk::v1::GetReservationResponse& response);
+  ErrorCode QueryReservation(const qtrade::account_risk::v1::GetReservationRequest& request,
+                             qtrade::account_risk::v1::GetReservationResponse& response);
 
   /// @brief 释放订单预占
   /// @param request 释放订单预占请求

@@ -8,8 +8,8 @@
 
 #include <qtrade/bridge/account_bridge.hpp>
 #include <qtrade/bridge/account_risk_bridge.hpp>
-#include <qtrade/engine/engine.hpp>
 #include <qtrade/common/proto/strategy_config_utils.hpp>
+#include <qtrade/engine/engine.hpp>
 #include <qtrade/proto/account/v1/account.pb.h>
 #include <qtrade/proto/account_risk/v1/account_risk.pb.h>
 #include <qtrade/proto/config/v1/config.pb.h>
@@ -24,7 +24,6 @@ namespace qtrade::bridge {
   out.account_id = proto.account_id();
   out.quote_source = proto.quote_source();
   out.quote_failover = proto.quote_failover();
-  out.valid_until_unix_ms = proto.valid_until_unix_ms();
   out.risk_budget.max_notional = proto.risk_budget().max_notional();
   out.risk_budget.max_margin = proto.risk_budget().max_margin();
   out.risk_budget.max_open_orders = proto.risk_budget().max_open_orders();
@@ -67,20 +66,38 @@ namespace qtrade::bridge {
   return out;
 }
 
-[[nodiscard]] inline qtrade::account_risk::ReserveDecision ToReserveDecision(
+[[nodiscard]] inline qtrade::account_risk::ReservationState ToReservationState(
   qtrade::account_risk::v1::ReserveOrderResponse::Decision d) {
   using Proto = qtrade::account_risk::v1::ReserveOrderResponse;
-  using Dom = qtrade::account_risk::ReserveDecision;
+  using Dom = qtrade::account_risk::ReservationState;
   switch (d) {
     case Proto::APPROVED:
-      return Dom::kApproved;
+      return Dom::kReserved;
     case Proto::REJECTED:
       return Dom::kRejected;
-    case Proto::UNKNOWN:
-      return Dom::kUnknown;
     default:
       return Dom::kUnspecified;
   }
+}
+
+[[nodiscard]] inline qtrade::account_risk::ReservationState ToReservationState(const std::string& status) {
+  using State = qtrade::account_risk::ReservationState;
+  if (status == "reserved") {
+    return State::kReserved;
+  }
+  if (status == "rejected") {
+    return State::kRejected;
+  }
+  if (status == "released") {
+    return State::kReleased;
+  }
+  if (status == "settled") {
+    return State::kSettled;
+  }
+  if (status == "expired") {
+    return State::kExpired;
+  }
+  return State::kUnspecified;
 }
 
 [[nodiscard]] inline qtrade::account_risk::v1::ReleaseOrderRequest::Reason ToProtoReleaseReason(
@@ -88,7 +105,7 @@ namespace qtrade::bridge {
   using Proto = qtrade::account_risk::v1::ReleaseOrderRequest;
   using Dom = qtrade::account_risk::ReleaseReason;
   switch (reason) {
-    case Dom::kEmsEnqueueFailed:
+    case Dom::kSendFailed:
       return Proto::EMS_ENQUEUE_FAILED;
     case Dom::kRejectedByVenue:
       return Proto::REJECTED_BY_VENUE;
@@ -108,7 +125,7 @@ namespace qtrade::bridge {
   qtrade::account_risk::Reservation out;
   out.order_id = proto.order_id();
   out.reservation_id = proto.reservation_id();
-  out.status = proto.status();
+  out.state = ToReservationState(proto.status());
   out.expires_at_unix_ms = proto.expires_at_unix_ms();
   return out;
 }

@@ -17,19 +17,19 @@ class EmtTraderSpi {
  public:
   /// @brief 设置接收转换后交易回调的目标对象。
   /// @param target qtrade SDK 交易回调目标；可为空。
-  void SetTarget(qtrade_sdk::trader::TraderSpi* target) {
+  void SetTarget(qtrade::sdk::trader::TraderSpi* target) {
     target_ = target;
   }
 
   /// @brief 获取当前交易回调目标对象。
   /// @return 当前目标对象；未设置时为 nullptr。
-  qtrade_sdk::trader::TraderSpi* Target() const {
+  qtrade::sdk::trader::TraderSpi* Target() const {
     return target_;
   }
 
  private:
   /// @brief qtrade SDK 交易回调目标对象。
-  qtrade_sdk::trader::TraderSpi* target_ = nullptr;
+  qtrade::sdk::trader::TraderSpi* target_ = nullptr;
 };
 
 }  // namespace qtrade::adapter::trader

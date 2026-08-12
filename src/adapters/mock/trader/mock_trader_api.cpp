@@ -8,7 +8,7 @@
 
 namespace qtrade::adapter::mock::trader {
 
-namespace sdk = qtrade_sdk::trader;
+namespace sdk = qtrade::sdk::trader;
 
 MockTraderApi::MockTraderApi() = default;
 
@@ -129,7 +129,8 @@ qtrade::ErrorCode MockTraderApi::SendOrder(const sdk::OrderRequest& request) {
   if (!connected_) {
     return qtrade::ErrorCode::kConnectionError;
   }
-  const std::uint64_t broker_order_id = request.broker_order_id != 0 ? request.broker_order_id : next_broker_order_id_++;
+  const std::uint64_t broker_order_id =
+    request.broker_order_id != 0 ? request.broker_order_id : next_broker_order_id_++;
   sdk::Order order;
   order.client_order_id = request.client_order_id;
   order.instrument = request.instrument;
@@ -391,7 +392,7 @@ void MockTraderApi::SetAutoFill(bool auto_fill) {
 
 namespace qtrade::adapter::mock::trader {
 
-std::unique_ptr<qtrade_sdk::trader::TraderApi> CreateMockTraderApi() {
+std::unique_ptr<qtrade::sdk::trader::TraderApi> CreateMockTraderApi() {
   return std::make_unique<MockTraderApi>();
 }
 

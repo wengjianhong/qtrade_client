@@ -8,7 +8,7 @@
 
 namespace qtrade::adapter::trader {
 
-namespace sdk = qtrade_sdk::trader;
+namespace sdk = qtrade::sdk::trader;
 
 EmtTraderApi::EmtTraderApi() = default;
 

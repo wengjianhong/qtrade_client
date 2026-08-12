@@ -8,7 +8,7 @@
 
 namespace qtrade::adapter::mock::quote {
 
-void MockQuoteSpi::PublishDepthMarketData(const qtrade_sdk::quote::MarketTick& market_data) {
+void MockQuoteSpi::PublishDepthMarketData(const qtrade::sdk::quote::MarketTick& market_data) {
   if (target_ != nullptr) {
     target_->OnDepthMarketData(market_data, {}, {});
   }

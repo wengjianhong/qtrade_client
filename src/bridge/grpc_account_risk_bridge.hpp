@@ -32,22 +32,16 @@ class GrpcAccountRiskBridge final : public qtrade::account_risk::IAccountRiskBri
   /// @brief 关闭 client；可重复调用
   void Shutdown();
 
-  Result<qtrade::account_risk::AccountRiskPolicy> GetAccountRiskPolicy(
-    const std::string& account_id) const override;
+  Result<qtrade::account_risk::AccountRiskPolicy> GetAccountRiskPolicy(const std::string& account_id) const override;
 
-  Result<qtrade::account_risk::ReserveOrderResult> ReserveOrder(const std::string& account_id,
-                                                                const qtrade::account_risk::OrderIntent& intent,
-                                                                std::uint64_t risk_config_version,
-                                                                std::int64_t reservation_ttl_ms) override;
+  Result<qtrade::account_risk::Reservation> Reserve(
+    const qtrade::account_risk::ReserveRequest& request) override;
 
-  Result<qtrade::account_risk::ReleaseOrderResult> ReleaseOrder(const std::string& account_id,
-                                                                const std::string& order_id,
-                                                                qtrade::account_risk::ReleaseReason reason,
-                                                                double settled_notional,
-                                                                double settled_margin) override;
+  Result<qtrade::account_risk::Reservation> Release(
+    const qtrade::account_risk::ReleaseRequest& request) override;
 
-  Result<qtrade::account_risk::Reservation> GetReservation(const std::string& account_id,
-                                                           const std::string& order_id) const override;
+  Result<qtrade::account_risk::Reservation> QueryReservation(const std::string& account_id,
+                                                             const std::string& order_id) const override;
 
  private:
   static std::string CacheKey(const std::string& account_id);

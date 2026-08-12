@@ -66,8 +66,8 @@ ErrorCode AccountRiskClient::ReserveOrder(const qtrade::account_risk::v1::Reserv
   return status.ok() ? ErrorCode::kSuccess : ErrorCode::kTimeout;
 }
 
-ErrorCode AccountRiskClient::GetReservation(const qtrade::account_risk::v1::GetReservationRequest& request,
-                                            qtrade::account_risk::v1::GetReservationResponse& response) {
+ErrorCode AccountRiskClient::QueryReservation(const qtrade::account_risk::v1::GetReservationRequest& request,
+                                              qtrade::account_risk::v1::GetReservationResponse& response) {
   if (!IsInitialized()) {
     return ErrorCode::kNotInitialized;
   }

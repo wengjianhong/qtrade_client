@@ -8,7 +8,7 @@
 
 namespace qtrade::adapter::quote {
 
-namespace sdk = qtrade_sdk::quote;
+namespace sdk = qtrade::sdk::quote;
 
 EmtQuoteApi::EmtQuoteApi() = default;
 

@@ -72,31 +72,28 @@ Result<qtrade::account_risk::AccountRiskPolicy> GrpcAccountRiskBridge::GetAccoun
   return result;
 }
 
-Result<qtrade::account_risk::ReserveOrderResult> GrpcAccountRiskBridge::ReserveOrder(
-  const std::string& account_id,
-  const qtrade::account_risk::OrderIntent& intent,
-  std::uint64_t risk_config_version,
-  std::int64_t reservation_ttl_ms) {
-  Result<qtrade::account_risk::ReserveOrderResult> result;
+Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::Reserve(
+  const qtrade::account_risk::ReserveRequest& reserve_request) {
+  Result<qtrade::account_risk::Reservation> result;
   if (!client_.IsInitialized()) {
     result.error_code = ErrorCode::kNotInitialized;
     return result;
   }
 
   qtrade::account_risk::v1::ReserveOrderRequest request;
-  request.set_account_id(account_id);
-  request.set_risk_config_version(risk_config_version);
-  request.set_reservation_ttl_ms(reservation_ttl_ms);
+  request.set_account_id(reserve_request.account_id);
+  request.set_risk_config_version(reserve_request.expected_policy_version);
+  request.set_reservation_ttl_ms(reserve_request.ttl_ms);
   auto* proto_intent = request.mutable_intent();
-  proto_intent->set_order_id(intent.order_id);
-  proto_intent->set_engine_id(intent.engine_id);
-  proto_intent->set_strategy_id(intent.strategy_id);
-  proto_intent->set_instrument_id(intent.instrument_id);
-  proto_intent->set_side(intent.side);
-  proto_intent->set_price(intent.price);
-  proto_intent->set_quantity(intent.quantity);
-  proto_intent->set_estimated_notional(intent.estimated_notional);
-  proto_intent->set_estimated_margin(intent.estimated_margin);
+  proto_intent->set_order_id(reserve_request.order_id);
+  proto_intent->set_engine_id(reserve_request.exposure.engine_id);
+  proto_intent->set_strategy_id(reserve_request.exposure.strategy_id);
+  proto_intent->set_instrument_id(reserve_request.exposure.instrument_id);
+  proto_intent->set_side(std::to_string(static_cast<int>(reserve_request.exposure.side)));
+  proto_intent->set_price(reserve_request.exposure.price);
+  proto_intent->set_quantity(reserve_request.exposure.quantity);
+  proto_intent->set_estimated_notional(reserve_request.exposure.notional);
+  proto_intent->set_estimated_margin(reserve_request.exposure.margin);
 
   qtrade::account_risk::v1::ReserveOrderResponse response;
   if (const auto rc = client_.ReserveOrder(request, response); rc != ErrorCode::kSuccess) {
@@ -105,9 +102,11 @@ Result<qtrade::account_risk::ReserveOrderResult> GrpcAccountRiskBridge::ReserveO
     return result;
   }
 
-  qtrade::account_risk::ReserveOrderResult out;
-  out.decision = ToReserveDecision(response.decision());
-  out.reject_reason = response.reject_reason();
+  qtrade::account_risk::Reservation out;
+  out.account_id = reserve_request.account_id;
+  out.order_id = reserve_request.order_id;
+  out.state = ToReservationState(response.decision());
+  out.reason = response.reject_reason();
   out.policy_version = response.policy_version();
   out.reservation_id = response.reservation_id();
   out.expires_at_unix_ms = response.expires_at_unix_ms();
@@ -115,24 +114,20 @@ Result<qtrade::account_risk::ReserveOrderResult> GrpcAccountRiskBridge::ReserveO
   return result;
 }
 
-Result<qtrade::account_risk::ReleaseOrderResult> GrpcAccountRiskBridge::ReleaseOrder(
-  const std::string& account_id,
-  const std::string& order_id,
-  qtrade::account_risk::ReleaseReason reason,
-  double settled_notional,
-  double settled_margin) {
-  Result<qtrade::account_risk::ReleaseOrderResult> result;
+Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::Release(
+  const qtrade::account_risk::ReleaseRequest& release_request) {
+  Result<qtrade::account_risk::Reservation> result;
   if (!client_.IsInitialized()) {
     result.error_code = ErrorCode::kNotInitialized;
     return result;
   }
 
   qtrade::account_risk::v1::ReleaseOrderRequest request;
-  request.set_account_id(account_id);
-  request.set_order_id(order_id);
-  request.set_reason(ToProtoReleaseReason(reason));
-  request.set_settled_notional(settled_notional);
-  request.set_settled_margin(settled_margin);
+  request.set_account_id(release_request.account_id);
+  request.set_order_id(release_request.order_id);
+  request.set_reason(ToProtoReleaseReason(release_request.reason));
+  request.set_settled_notional(release_request.notional);
+  request.set_settled_margin(release_request.margin);
 
   qtrade::account_risk::v1::ReleaseOrderResponse response;
   if (const auto rc = client_.ReleaseOrder(request, response); rc != ErrorCode::kSuccess) {
@@ -141,16 +136,21 @@ Result<qtrade::account_risk::ReleaseOrderResult> GrpcAccountRiskBridge::ReleaseO
     return result;
   }
 
-  qtrade::account_risk::ReleaseOrderResult out;
-  out.released = response.released();
-  out.reject_reason = response.reject_reason();
+  qtrade::account_risk::Reservation out;
+  out.account_id = release_request.account_id;
+  out.order_id = release_request.order_id;
+  if (response.released()) {
+    out.state = release_request.reason == qtrade::account_risk::ReleaseReason::kSettled
+                  ? qtrade::account_risk::ReservationState::kSettled
+                  : qtrade::account_risk::ReservationState::kReleased;
+  }
+  out.reason = response.reject_reason();
   result.data = std::move(out);
   return result;
 }
 
-Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::GetReservation(
-  const std::string& account_id,
-  const std::string& order_id) const {
+Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::QueryReservation(const std::string& account_id,
+                                                                                  const std::string& order_id) const {
   Result<qtrade::account_risk::Reservation> result;
   if (!client_.IsInitialized()) {
     result.error_code = ErrorCode::kNotInitialized;
@@ -161,12 +161,14 @@ Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::GetReservation(
   request.set_account_id(account_id);
   request.set_order_id(order_id);
   qtrade::account_risk::v1::GetReservationResponse response;
-  if (const auto rc = client_.GetReservation(request, response); rc != ErrorCode::kSuccess) {
+  if (const auto rc = client_.QueryReservation(request, response); rc != ErrorCode::kSuccess) {
     result.error_code = rc;
-    result.error_message = "GetReservation RPC failed";
+    result.error_message = "QueryReservation RPC failed";
     return result;
   }
-  result.data = ToReservation(response.reservation());
+  auto reservation = ToReservation(response.reservation());
+  reservation.account_id = account_id;
+  result.data = std::move(reservation);
   return result;
 }
 

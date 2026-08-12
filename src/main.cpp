@@ -29,15 +29,15 @@
 namespace {
 
 struct AdapterBundle {
-  std::unique_ptr<qtrade_sdk::quote::QuoteApi> quote_api;
-  std::unique_ptr<qtrade_sdk::trader::TraderApi> trader_api;
+  std::unique_ptr<qtrade::sdk::quote::QuoteApi> quote_api;
+  std::unique_ptr<qtrade::sdk::trader::TraderApi> trader_api;
 };
 
 [[nodiscard]] bool ConnectAndTake(AdapterBundle* out,
-                                  std::unique_ptr<qtrade_sdk::quote::QuoteApi> quote_api,
-                                  std::unique_ptr<qtrade_sdk::trader::TraderApi> trader_api,
-                                  qtrade_sdk::quote::ConnectRequest quote_request,
-                                  qtrade_sdk::trader::ConnectRequest trader_request) {
+                                  std::unique_ptr<qtrade::sdk::quote::QuoteApi> quote_api,
+                                  std::unique_ptr<qtrade::sdk::trader::TraderApi> trader_api,
+                                  qtrade::sdk::quote::ConnectRequest quote_request,
+                                  qtrade::sdk::trader::ConnectRequest trader_request) {
   if (quote_api->Connect(quote_request) != qtrade::ErrorCode::kSuccess) {
     return false;
   }
@@ -166,8 +166,8 @@ int main(int argc, char** argv) {
     engine->SetAccountBridge(account_bridge.get());
   }
   if (bootstrap_config->support_services.account_risk_service.enabled) {
-    account_risk_bridge = std::make_unique<qtrade::bridge::GrpcAccountRiskBridge>(
-      bootstrap_config->support_services.account_risk_service);
+    account_risk_bridge =
+      std::make_unique<qtrade::bridge::GrpcAccountRiskBridge>(bootstrap_config->support_services.account_risk_service);
     if (account_risk_bridge->Init() != qtrade::ErrorCode::kSuccess) {
       qtrade::common::system::NotifyError(0, "Failed to init account risk bridge");
       return EXIT_FAILURE;
@@ -176,10 +176,8 @@ int main(int argc, char** argv) {
   }
 
   AdapterBundle adapters;
-  if (!BuildAdapters(*bootstrap_config,
-                     adapter_params.has_value() ? &*adapter_params : nullptr,
-                     account_bridge.get(),
-                     &adapters)) {
+  if (!BuildAdapters(
+        *bootstrap_config, adapter_params.has_value() ? &*adapter_params : nullptr, account_bridge.get(), &adapters)) {
     qtrade::common::system::NotifyError(0, "Failed to build/connect quote/trader adapters");
     return EXIT_FAILURE;
   }

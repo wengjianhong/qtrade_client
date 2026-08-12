@@ -17,19 +17,19 @@ class EmtQuoteSpi {
  public:
   /// @brief 设置接收转换后行情回调的目标对象。
   /// @param target qtrade SDK 行情回调目标；可为空。
-  void SetTarget(qtrade_sdk::quote::QuoteSpi* target) {
+  void SetTarget(qtrade::sdk::quote::QuoteSpi* target) {
     target_ = target;
   }
 
   /// @brief 获取当前行情回调目标对象。
   /// @return 当前目标对象；未设置时为 nullptr。
-  qtrade_sdk::quote::QuoteSpi* Target() const {
+  qtrade::sdk::quote::QuoteSpi* Target() const {
     return target_;
   }
 
  private:
   /// @brief qtrade SDK 行情回调目标对象。
-  qtrade_sdk::quote::QuoteSpi* target_ = nullptr;
+  qtrade::sdk::quote::QuoteSpi* target_ = nullptr;
 };
 
 }  // namespace qtrade::adapter::quote
