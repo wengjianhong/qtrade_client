@@ -11,22 +11,22 @@ qtrade::strategy::StrategyConfig ParseStrategyConfigProto(const StrategyConfigPr
   qtrade::strategy::StrategyConfig out;
   out.enabled = config.enabled();
   out.strategy_id = config.strategy_id();
-  out.order_volume = config.order_volume();
   out.strategy_name = config.strategy_name();
+  out.instruments.assign(config.instruments().begin(), config.instruments().end());
   out.risk.order_cooldown_ms = config.order_cooldown_ms();
   out.risk.max_position_volume = config.max_position_volume();
-  out.instruments.assign(config.instruments().begin(), config.instruments().end());
+  out.args.order_volume = config.order_volume();
   if (config.has_window_size()) {
-    out.window_size = config.window_size();
+    out.args.window_size = config.window_size();
   }
   if (config.has_order_threshold()) {
-    out.order_threshold = config.order_threshold();
+    out.args.order_threshold = config.order_threshold();
   }
   if (config.has_stop_loss_percent()) {
-    out.stop_loss_percent = config.stop_loss_percent();
+    out.args.stop_loss_percent = config.stop_loss_percent();
   }
   if (config.has_take_profit_percent()) {
-    out.take_profit_percent = config.take_profit_percent();
+    out.args.take_profit_percent = config.take_profit_percent();
   }
   return out;
 }
