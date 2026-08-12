@@ -13,8 +13,8 @@ qtrade::strategy::StrategyConfig ParseStrategyConfigProto(const StrategyConfigPr
   out.strategy_id = config.strategy_id();
   out.order_volume = config.order_volume();
   out.strategy_name = config.strategy_name();
-  out.order_cooldown_ms = config.order_cooldown_ms();
-  out.max_position_volume = config.max_position_volume();
+  out.risk.order_cooldown_ms = config.order_cooldown_ms();
+  out.risk.max_position_volume = config.max_position_volume();
   out.instruments.assign(config.instruments().begin(), config.instruments().end());
   if (config.has_window_size()) {
     out.window_size = config.window_size();

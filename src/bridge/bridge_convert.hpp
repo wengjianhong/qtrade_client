@@ -24,10 +24,6 @@ namespace qtrade::bridge {
   out.account_id = proto.account_id();
   out.quote_source = proto.quote_source();
   out.quote_failover = proto.quote_failover();
-  out.risk_budget.max_notional = proto.risk_budget().max_notional();
-  out.risk_budget.max_margin = proto.risk_budget().max_margin();
-  out.risk_budget.max_open_orders = proto.risk_budget().max_open_orders();
-  out.risk_budget.safety_buffer = proto.risk_budget().safety_buffer();
   return out;
 }
 
