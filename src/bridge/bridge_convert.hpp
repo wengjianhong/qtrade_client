@@ -24,6 +24,9 @@ namespace qtrade::bridge {
   out.account_id = proto.account_id();
   out.quote_source = proto.quote_source();
   out.quote_failover = proto.quote_failover();
+  if (proto.quote_max_stale_ms() > 0) {
+    out.quote_max_stale_ms = proto.quote_max_stale_ms();
+  }
   return out;
 }
 
