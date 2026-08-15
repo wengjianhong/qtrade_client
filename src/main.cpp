@@ -49,7 +49,7 @@ struct AdapterBundle {
   return true;
 }
 
-[[nodiscard]] bool BuildAdapters(const qtrade::common::config::QtradeEngineBootstrapConfig& bootstrap,
+[[nodiscard]] bool BuildAdapters(const qtrade::client::bootstrap::QtradeEngineBootstrapConfig& bootstrap,
                                  const qtrade::bridge::AdapterLaunchParams* adapter_params,
                                  qtrade::account::IAccountBridge* account_bridge,
                                  AdapterBundle* out) {
