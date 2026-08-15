@@ -7,14 +7,13 @@
 /// @copyright CC BY-NC-SA 4.0
 #include "adapters/emt/emt_adapter_factory.hpp"
 #include "adapters/mock/mock_adapter_factory.hpp"
+#include "bootstrap/engine_boot.hpp"
 #include "qtrade/bridge/grpc_account_bridge.hpp"
 #include "qtrade/bridge/grpc_account_risk_bridge.hpp"
 #include "qtrade/bridge/grpc_config_bridge.hpp"
 #include "qtrade/common/boot/process_boot.hpp"
 #include "qtrade/common/system/signal.hpp"
 #include "qtrade/common/system/systemd_notify.hpp"
-#include "qtrade/engine/core/engine_boot.hpp"
-#include "qtrade/engine/trading_engine_define.hpp"
 
 #include <qtrade/engine/engine.hpp>
 
@@ -110,13 +109,13 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  const auto bootstrap_config = qtrade::engine::boot::LoadBootstrapConfig(options_result.data.value());
+  const auto bootstrap_config = qtrade::client::bootstrap::LoadBootstrapConfig(options_result.data.value());
   if (!bootstrap_config.has_value()) {
     qtrade::common::system::NotifyError(0, "Failed to load engine bootstrap config");
     return EXIT_FAILURE;
   }
 
-  if (!qtrade::common::process_boot::InitProgramEnvironment(qtrade::engine::kServiceName,
+  if (!qtrade::common::process_boot::InitProgramEnvironment("qtrade_client",
                                                             bootstrap_config->config.log_dir,
                                                             bootstrap_config->config.log_filename,
                                                             options_result.data.value())) {
@@ -189,18 +188,18 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  if (!qtrade::engine::boot::LoadStrategies(*engine, bootstrap_config->config.strategy.plugin_dir, strategies)) {
+  if (!qtrade::client::bootstrap::LoadStrategies(*engine, bootstrap_config->config.strategy.plugin_dir, strategies)) {
     qtrade::common::system::NotifyError(0, "Failed to load strategies");
     return EXIT_FAILURE;
   }
 
-  if (!qtrade::engine::boot::StartEngine(*engine)) {
+  if (!qtrade::client::bootstrap::StartEngine(*engine)) {
     qtrade::common::system::NotifyError(0, "Failed to start engine");
     return EXIT_FAILURE;
   }
   (void)qtrade::common::system::NotifyReady("qtrade_client ready");
 
-  qtrade::engine::boot::RunUntilShutdown(*engine);
+  qtrade::client::bootstrap::RunUntilShutdown(*engine);
 
   if (account_risk_bridge) {
     account_risk_bridge->Shutdown();
@@ -212,6 +211,6 @@ int main(int argc, char** argv) {
     config_bridge->Shutdown();
   }
 
-  qtrade::common::process_boot::LogProcessStopped(qtrade::engine::kServiceName);
+  qtrade::common::process_boot::LogProcessStopped("qtrade_client");
   return EXIT_SUCCESS;
 }

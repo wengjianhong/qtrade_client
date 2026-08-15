@@ -67,6 +67,17 @@ target_link_libraries(qtrade_client_adapters PUBLIC
   qtrade_engine::qtrade_engine
 )
 
+file(GLOB_RECURSE QTRADE_CLIENT_BOOTSTRAP_SRC CONFIGURE_DEPENDS
+  ${CMAKE_SOURCE_DIR}/src/bootstrap/*.cpp)
+add_library(qtrade_client_bootstrap STATIC ${QTRADE_CLIENT_BOOTSTRAP_SRC})
+target_include_directories(qtrade_client_bootstrap PUBLIC
+  ${CMAKE_SOURCE_DIR}/src
+)
+target_link_libraries(qtrade_client_bootstrap PUBLIC
+  qtrade_common::qtrade_common
+  qtrade_engine::qtrade_engine
+)
+
 add_executable(qtrade_client ${CMAKE_SOURCE_DIR}/src/main.cpp)
 target_include_directories(qtrade_client PRIVATE
   ${QTRADE_CLIENT_INCLUDE_OVERLAY_DIR}
@@ -74,4 +85,5 @@ target_include_directories(qtrade_client PRIVATE
 target_link_libraries(qtrade_client PRIVATE
   qtrade_client_adapters
   qtrade_client_bridges
+  qtrade_client_bootstrap
 )
