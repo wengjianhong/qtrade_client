@@ -1,6 +1,6 @@
 # qtrade_client
 
-企业级量化交易客户端：组合已安装的 `qtrade_engine`（核心库 / `IEngine`）与 `qtrade_service`（**proto** + 微服务），产出生产进程 **`qtrade_client`**。
+量化交易客户端：组合已安装的 `qtrade_common`、`qtrade_engine`（核心库 / `IEngine`）与 `qtrade_service`（proto + 微服务），产出进程 **`qtrade_client`**。
 
 本仓自行维护并编译：
 
@@ -13,12 +13,14 @@
 ## 构建顺序
 
 ```bash
-# 1. qtrade_engine（库）
-# 2. qtrade_service（微服务 + proto 库）
-# 3. qtrade_strategy（可选，策略 so）
-# 4. 本仓
+# 1. cpputils
+# 2. qtrade_common
+# 3. qtrade_engine（库）
+# 4. qtrade_service（微服务 + proto 库）
+# 5. qtrade_strategy（可选，策略 so）
+# 6. 本仓
 
-cmake -B build \
+cmake -S . -B build \
   -DCMAKE_INSTALL_PREFIX=/usr/local/qtrade \
   -DCMAKE_PREFIX_PATH="/usr/local/cpputils;/usr/local/qtrade"
 cmake --build build -j1

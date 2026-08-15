@@ -27,6 +27,12 @@ namespace qtrade::bridge {
   if (proto.quote_max_stale_ms() > 0) {
     out.quote_max_stale_ms = proto.quote_max_stale_ms();
   }
+  const auto& risk = proto.instance_risk();
+  out.instance_risk.version = risk.version();
+  out.instance_risk.max_order_volume = risk.max_order_volume();
+  out.instance_risk.max_order_notional = risk.max_order_notional();
+  out.instance_risk.max_open_orders = risk.max_open_orders();
+  out.instance_risk.max_pending_notional = risk.max_pending_notional();
   return out;
 }
 
