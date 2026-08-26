@@ -80,6 +80,18 @@ ErrorCode AccountRiskClient::QueryReservation(const qtrade::account_risk::v1::Ge
   return status.error_code() == grpc::StatusCode::NOT_FOUND ? ErrorCode::kNotFound : ErrorCode::kTimeout;
 }
 
+ErrorCode AccountRiskClient::ListActiveReservations(
+  const qtrade::account_risk::v1::ListActiveReservationsRequest& request,
+  qtrade::account_risk::v1::ListActiveReservationsResponse& response) {
+  if (!IsInitialized()) {
+    return ErrorCode::kNotInitialized;
+  }
+  grpc::ClientContext context;
+  context.set_deadline(DeadlineFrom(impl_->options.service_config));
+  const grpc::Status status = impl_->stub->ListActiveReservations(&context, request, &response);
+  return status.ok() ? ErrorCode::kSuccess : ErrorCode::kTimeout;
+}
+
 ErrorCode AccountRiskClient::ReleaseOrder(const qtrade::account_risk::v1::ReleaseOrderRequest& request,
                                           qtrade::account_risk::v1::ReleaseOrderResponse& response) {
   if (!IsInitialized()) {

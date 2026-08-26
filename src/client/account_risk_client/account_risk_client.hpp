@@ -54,6 +54,10 @@ class AccountRiskClient {
   ErrorCode QueryReservation(const qtrade::account_risk::v1::GetReservationRequest& request,
                              qtrade::account_risk::v1::GetReservationResponse& response);
 
+  /// @brief 列出账户上仍为 reserved 的预占
+  ErrorCode ListActiveReservations(const qtrade::account_risk::v1::ListActiveReservationsRequest& request,
+                                   qtrade::account_risk::v1::ListActiveReservationsResponse& response);
+
   /// @brief 释放订单预占
   /// @param request 释放订单预占请求
   /// @param response 释放订单预占响应

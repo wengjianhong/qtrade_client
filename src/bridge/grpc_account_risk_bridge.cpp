@@ -172,4 +172,32 @@ Result<qtrade::account_risk::Reservation> GrpcAccountRiskBridge::QueryReservatio
   return result;
 }
 
+Result<std::vector<qtrade::account_risk::Reservation>> GrpcAccountRiskBridge::ListActiveReservations(
+  const std::string& account_id) const {
+  Result<std::vector<qtrade::account_risk::Reservation>> result;
+  if (!client_.IsInitialized()) {
+    result.error_code = ErrorCode::kNotInitialized;
+    return result;
+  }
+
+  qtrade::account_risk::v1::ListActiveReservationsRequest request;
+  request.set_account_id(account_id);
+  qtrade::account_risk::v1::ListActiveReservationsResponse response;
+  if (const auto rc = client_.ListActiveReservations(request, response); rc != ErrorCode::kSuccess) {
+    result.error_code = rc;
+    result.error_message = "ListActiveReservations RPC failed";
+    return result;
+  }
+
+  std::vector<qtrade::account_risk::Reservation> reservations;
+  reservations.reserve(static_cast<std::size_t>(response.reservations_size()));
+  for (const auto& proto : response.reservations()) {
+    auto reservation = ToReservation(proto);
+    reservation.account_id = account_id;
+    reservations.push_back(std::move(reservation));
+  }
+  result.data = std::move(reservations);
+  return result;
+}
+
 }  // namespace qtrade::bridge

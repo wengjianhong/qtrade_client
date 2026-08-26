@@ -14,6 +14,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace qtrade::bridge {
 
@@ -42,6 +43,9 @@ class GrpcAccountRiskBridge final : public qtrade::account_risk::IAccountRiskBri
 
   Result<qtrade::account_risk::Reservation> QueryReservation(const std::string& account_id,
                                                              const std::string& order_id) const override;
+
+  Result<std::vector<qtrade::account_risk::Reservation>> ListActiveReservations(
+    const std::string& account_id) const override;
 
  private:
   static std::string CacheKey(const std::string& account_id);
