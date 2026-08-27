@@ -12,8 +12,7 @@ namespace {
 
 /// @brief 在 support_services 数组中按 name 查找并解析端点
 [[nodiscard]] std::optional<qtrade::common::config::ServiceConfig> ParseSupportServiceByName(
-  const nlohmann::json& support_services,
-  const char* name) {
+  const nlohmann::json& support_services, const char* name) {
   if (!support_services.is_array()) {
     spdlog::error("support_services must be an array");
     return std::nullopt;
@@ -95,8 +94,7 @@ std::optional<QtradeEngineBootstrapConfig> ParseQtradeEngineBootstrapConfig(cons
   out.support_services.account_service = account_service.value();
   out.support_services.account_risk_service = account_risk_service.value();
 
-  if (out.support_services.account_risk_service.enabled &&
-      out.support_services.account_risk_service.timeout_ms <= 0) {
+  if (out.support_services.account_risk_service.enabled && out.support_services.account_risk_service.timeout_ms <= 0) {
     spdlog::error("account_risk_service.enabled but timeout_ms invalid");
     return std::nullopt;
   }

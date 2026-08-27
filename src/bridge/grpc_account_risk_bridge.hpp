@@ -35,11 +35,9 @@ class GrpcAccountRiskBridge final : public qtrade::account_risk::IAccountRiskBri
 
   Result<qtrade::account_risk::AccountRiskPolicy> GetAccountRiskPolicy(const std::string& account_id) const override;
 
-  Result<qtrade::account_risk::Reservation> Reserve(
-    const qtrade::account_risk::ReserveRequest& request) override;
+  Result<qtrade::account_risk::Reservation> Reserve(const qtrade::account_risk::ReserveRequest& request) override;
 
-  Result<qtrade::account_risk::Reservation> Release(
-    const qtrade::account_risk::ReleaseRequest& request) override;
+  Result<qtrade::account_risk::Reservation> Release(const qtrade::account_risk::ReleaseRequest& request) override;
 
   Result<qtrade::account_risk::Reservation> QueryReservation(const std::string& account_id,
                                                              const std::string& order_id) const override;

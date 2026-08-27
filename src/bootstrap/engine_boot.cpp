@@ -32,15 +32,11 @@ bool LoadStrategies(qtrade::engine::IEngine& engine,
   spdlog::info("[engine_boot] LoadStrategies plugin_dir={} count={}", plugin_dir, strategies.size());
   for (const auto& config : strategies) {
     const std::string so_path = DefaultPluginSoPath(plugin_dir, config.strategy_name);
-    spdlog::info("[engine_boot] AddStrategy id={} name={} so={}",
-                 config.strategy_id,
-                 config.strategy_name,
-                 so_path);
+    spdlog::info("[engine_boot] AddStrategy id={} name={} so={}", config.strategy_id, config.strategy_name, so_path);
     const ErrorCode code = engine.AddStrategy(config, so_path);
     if (code != ErrorCode::kSuccess) {
-      spdlog::error("[engine_boot] AddStrategy failed strategy_id={} code={}",
-                    config.strategy_id,
-                    static_cast<int>(code));
+      spdlog::error(
+        "[engine_boot] AddStrategy failed strategy_id={} code={}", config.strategy_id, static_cast<int>(code));
       return false;
     }
   }

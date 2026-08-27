@@ -8,8 +8,8 @@
 #ifndef QTRADE_CLIENT_BOOTSTRAP_ENGINE_BOOT_HPP_
 #define QTRADE_CLIENT_BOOTSTRAP_ENGINE_BOOT_HPP_
 
-#include "qtrade/common/boot/process_boot.hpp"
 #include "bootstrap/engine_bootstrap_config.hpp"
+#include "qtrade/common/boot/process_boot.hpp"
 
 #include <qtrade/engine/engine.hpp>
 #include <qtrade/strategy/strategy.hpp>
