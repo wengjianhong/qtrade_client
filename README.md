@@ -52,7 +52,7 @@ sudo cmake --install build
 └── config/qtrade_engine.json
 ```
 
-全链一键构建：`GitSpace/scripts/cmake-build.sh`。
+全链安装与编排见并列仓 **qtrade_devops**。
 
 ## 运行
 
